@@ -891,7 +891,7 @@ k8s.io/apimachinery/pkg/runtime.RawExtension
 <td>
 <code>auth</code><br>
 <em>
-github.com/datainfrahq/druid-operator/pkg/druidapi.Auth
+github.com/apache/druid-operator/pkg/druidapi.Auth
 </em>
 </td>
 <td>
@@ -1147,7 +1147,7 @@ IngestionSpec
 <td>
 <code>auth</code><br>
 <em>
-github.com/datainfrahq/druid-operator/pkg/druidapi.Auth
+github.com/apache/druid-operator/pkg/druidapi.Auth
 </em>
 </td>
 <td>
@@ -1232,7 +1232,7 @@ IngestionSpec
 <td>
 <code>auth</code><br>
 <em>
-github.com/datainfrahq/druid-operator/pkg/druidapi.Auth
+github.com/apache/druid-operator/pkg/druidapi.Auth
 </em>
 </td>
 <td>
@@ -2721,7 +2721,7 @@ k8s.io/apimachinery/pkg/runtime.RawExtension
 <td>
 <code>auth</code><br>
 <em>
-github.com/datainfrahq/druid-operator/pkg/druidapi.Auth
+github.com/apache/druid-operator/pkg/druidapi.Auth
 </em>
 </td>
 <td>

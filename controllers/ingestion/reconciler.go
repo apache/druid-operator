@@ -7,7 +7,7 @@ to you under the Apache License, Version 2.0 (the
 "License"); you may not use this file except in compliance
 with the License.  You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing,
 software distributed under the License is distributed on an
@@ -27,12 +27,11 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/datainfrahq/druid-operator/apis/druid/v1alpha1"
-	"github.com/datainfrahq/druid-operator/controllers/druid"
-	druidapi "github.com/datainfrahq/druid-operator/pkg/druidapi"
-	internalhttp "github.com/datainfrahq/druid-operator/pkg/http"
-	"github.com/datainfrahq/druid-operator/pkg/util"
-	"github.com/datainfrahq/operator-runtime/builder"
+	"github.com/apache/druid-operator/apis/druid/v1alpha1"
+	"github.com/apache/druid-operator/controllers/druid"
+	druidapi "github.com/apache/druid-operator/pkg/druidapi"
+	internalhttp "github.com/apache/druid-operator/pkg/http"
+	"github.com/apache/druid-operator/pkg/util"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -69,11 +68,7 @@ func (r *DruidIngestionReconciler) do(ctx context.Context, di *v1alpha1.DruidIng
 		return err
 	}
 
-	build := builder.NewBuilder(
-		builder.ToNewBuilderRecorder(builder.BuilderRecorder{Recorder: r.Recorder, ControllerName: "DruidIngestionController"}),
-	)
-
-	_, err = r.CreateOrUpdate(di, svcName, *build, internalhttp.Auth{BasicAuth: basicAuth})
+	_, err = r.CreateOrUpdate(di, svcName, internalhttp.Auth{BasicAuth: basicAuth})
 	if err != nil {
 		return err
 	}
@@ -110,14 +105,14 @@ func (r *DruidIngestionReconciler) do(ctx context.Context, di *v1alpha1.DruidIng
 				return err
 			}
 			if respShutDownTask.StatusCode != 200 {
-				build.Recorder.GenericEvent(
+				r.Recorder.Event(
 					di,
 					v1.EventTypeWarning,
 					fmt.Sprintf("Resp [%s], StatusCode [%d]", string(respShutDownTask.ResponseBody), respShutDownTask.StatusCode),
 					DruidIngestionControllerShutDownFail,
 				)
 			} else {
-				build.Recorder.GenericEvent(
+				r.Recorder.Event(
 					di,
 					v1.EventTypeNormal,
 					fmt.Sprintf("Resp [%s], StatusCode [%d]", string(respShutDownTask.ResponseBody), respShutDownTask.StatusCode),
@@ -364,7 +359,6 @@ func (r *DruidIngestionReconciler) UpdateRules(
 func (r *DruidIngestionReconciler) CreateOrUpdate(
 	di *v1alpha1.DruidIngestion,
 	svcName string,
-	build builder.Builder,
 	auth internalhttp.Auth,
 ) (controllerutil.OperationResult, error) {
 
@@ -420,13 +414,13 @@ func (r *DruidIngestionReconciler) CreateOrUpdate(
 			if err != nil {
 				return controllerutil.OperationResultNone, err
 			}
-			build.Recorder.GenericEvent(
+			r.Recorder.Event(
 				di,
 				v1.EventTypeNormal,
 				fmt.Sprintf("Resp [%s]", string(respCreateTask.ResponseBody)),
 				DruidIngestionControllerCreateSuccess,
 			)
-			build.Recorder.GenericEvent(
+			r.Recorder.Event(
 				di,
 				v1.EventTypeNormal,
 				fmt.Sprintf("Resp [%s], Result [%s]", string(respCreateTask.ResponseBody), result),
@@ -449,7 +443,7 @@ func (r *DruidIngestionReconciler) CreateOrUpdate(
 			if err != nil {
 				return controllerutil.OperationResultNone, err
 			}
-			build.Recorder.GenericEvent(
+			r.Recorder.Event(
 				di,
 				v1.EventTypeWarning,
 				fmt.Sprintf("Resp [%s], Status", string(respCreateTask.ResponseBody)),
@@ -501,13 +495,13 @@ func (r *DruidIngestionReconciler) CreateOrUpdate(
 				if err != nil {
 					return controllerutil.OperationResultNone, err
 				}
-				build.Recorder.GenericEvent(
+				r.Recorder.Event(
 					di,
 					v1.EventTypeNormal,
 					fmt.Sprintf("Resp [%s]", string(respUpdateSpec.ResponseBody)),
 					DruidIngestionControllerUpdateSuccess,
 				)
-				build.Recorder.GenericEvent(
+				r.Recorder.Event(
 					di,
 					v1.EventTypeNormal,
 					fmt.Sprintf("Resp [%s], Result [%s]", string(respUpdateSpec.ResponseBody), result),
@@ -534,7 +528,7 @@ func (r *DruidIngestionReconciler) CreateOrUpdate(
 			if err != nil {
 				return controllerutil.OperationResultNone, err
 			}
-			build.Recorder.GenericEvent(
+			r.Recorder.Event(
 				di,
 				v1.EventTypeNormal,
 				"compaction updated",
@@ -564,7 +558,7 @@ func (r *DruidIngestionReconciler) CreateOrUpdate(
 				if err != nil {
 					return controllerutil.OperationResultNone, err
 				}
-				build.Recorder.GenericEvent(
+				r.Recorder.Event(
 					di,
 					v1.EventTypeNormal,
 					"rules updated",

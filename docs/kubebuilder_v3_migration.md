@@ -133,7 +133,7 @@ There are two ways you can choose to deploy the new YAMLs:
 ```shell
 # Set the tag you want for the controller
 cd config/manager
-kustomize edit set image controller=datainfrahq/druid-operator:${IMG_TAG}
+kustomize edit set image controller=apache/druid-operator:${IMG_TAG}
 # Back to root and apply
 cd ../../
 kustomize build config/default | kubectl apply -f -
@@ -152,7 +152,7 @@ kustomize edit set namespace druid-operator
 cd ../../
 # Set the tag you want for the controller
 cd config/manager
-kustomize edit set image controller=datainfrahq/druid-operator:${IMG_TAG}
+kustomize edit set image controller=apache/druid-operator:${IMG_TAG}
 cd ../../
 ```
 2. Apply the YAMLs

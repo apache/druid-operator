@@ -7,7 +7,7 @@ to you under the Apache License, Version 2.0 (the
 "License"); you may not use this file except in compliance
 with the License.  You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing,
 software distributed under the License is distributed on an
@@ -23,7 +23,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/datainfrahq/druid-operator/controllers/druid"
+	"github.com/apache/druid-operator/controllers/druid"
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -36,8 +36,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	druidv1alpha1 "github.com/datainfrahq/druid-operator/apis/druid/v1alpha1"
-	druidingestioncontrollers "github.com/datainfrahq/druid-operator/controllers/ingestion"
+	druidv1alpha1 "github.com/apache/druid-operator/apis/druid/v1alpha1"
+	druidingestioncontrollers "github.com/apache/druid-operator/controllers/ingestion"
 	//+kubebuilder:scaffold:imports
 )
 

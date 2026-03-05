@@ -7,7 +7,7 @@ layout:
 - go.kubebuilder.io/v3
 multigroup: true
 projectName: druid-operator
-repo: github.com/datainfrahq/druid-operator
+repo: github.com/apache/druid-operator
 resources:
 - api:
     crdVersion: v1
@@ -16,7 +16,7 @@ resources:
   domain: apache.org
   group: druid
   kind: Druid
-  path: github.com/datainfrahq/druid-operator/apis/druid/v1alpha1
+  path: github.com/apache/druid-operator/apis/druid/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -25,6 +25,6 @@ resources:
   domain: apache.org
   group: druid
   kind: DruidIngestion
-  path: github.com/datainfrahq/druid-operator/apis/druid/v1alpha1
+  path: github.com/apache/druid-operator/apis/druid/v1alpha1
   version: v1alpha1
 version: "3"
