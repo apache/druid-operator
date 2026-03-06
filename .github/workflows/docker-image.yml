@@ -27,10 +27,22 @@ on:
 
 jobs:
 
+  rat:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '11'
+    - name: Run Apache RAT license audit
+      run: make rat
+
   tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Run Kubebuilder smoke and unit tests
       run: make test
     - name: Run helm lint

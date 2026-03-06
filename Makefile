@@ -79,10 +79,37 @@ help: ## Display this help.
 kind: ## Bootstrap Kind Locally
 	sh e2e/kind.sh
 
+define APACHE_YAML_HEADER
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+endef
+export APACHE_YAML_HEADER
+
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) crd:generateEmbeddedObjectMeta=true rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 	$(CONTROLLER_GEN) crd:generateEmbeddedObjectMeta=true paths="./..." output:crd:artifacts:config=chart/crds/
+	@for f in config/crd/bases/druid.apache.org_*.yaml chart/crds/druid.apache.org_*.yaml config/rbac/role.yaml; do \
+		tmp=$$(mktemp) && \
+		{ printf '%s\n' "$$APACHE_YAML_HEADER"; cat $$f; } > $$tmp && \
+		mv $$tmp $$f; \
+	done
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
@@ -112,8 +139,10 @@ rat: rat-jar ## Run Apache RAT license audit (set ENABLE_RAT=false to skip).
 	  --input-exclude-std GIT \
 	  --input-exclude "**/*.png" \
 	  --input-exclude "**/*.sum" \
+	  --input-exclude "**/*.sh" \
 	  --input-exclude "**/zz_generated.*.go" \
 	  --input-exclude "**/PROJECT" \
+	  --input-exclude "**/.asf.yaml" \
 	  -- .
 else
 .PHONY: rat
