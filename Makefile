@@ -340,7 +340,7 @@ $(GEN_CRD_API_REFERENCE_DOCS): $(LOCALBIN)
 rat-jar: $(RAT_JAR) ## Download Apache RAT jar locally if necessary.
 $(RAT_JAR): $(LOCALBIN)
 	mkdir -p /tmp/rat-download && \
-	curl -sSL "https://dlcdn.apache.org/creadur/apache-rat-$(RAT_VERSION)/apache-rat-$(RAT_VERSION)-bin.tar.gz" \
+	curl -sSL "https://repo1.maven.org/maven2/org/apache/rat/apache-rat/$(RAT_VERSION)/apache-rat-$(RAT_VERSION).jar" \
 	  -o /tmp/rat-download/rat.tar.gz && \
 	tar -xzf /tmp/rat-download/rat.tar.gz -C /tmp/rat-download && \
 	mv /tmp/rat-download/apache-rat-$(RAT_VERSION)/apache-rat-$(RAT_VERSION).jar $(RAT_JAR) && \
