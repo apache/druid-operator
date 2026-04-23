@@ -75,7 +75,16 @@ spec:
             - /bin/sh echo hello
           containerName: node-level
           image: hello-world
-    historicals2:
+    historicalstier2:
+      nodeType: "historical"
+      druid.port: 8080
+      nodeConfigMountPath: "/opt/druid/conf/druid/cluster/data/historical"
+      replicas: 1
+      runtime.properties: |-
+        druid.service=druid/historical
+        druid.segmentCache.locations=[{\"path\":\"/druid/data/segments\",\"maxSize\":10737418240}]
+        druid.server.maxSize=10737418240
+    historicalstier3:
       nodeType: "historical"
       druid.port: 8080
       nodeConfigMountPath: "/opt/druid/conf/druid/cluster/data/historical"
@@ -119,7 +128,7 @@ spec:
         druid.realtime.cache.populateCache=true
         druid.indexer.runner.javaOptsArray=["-server","-Duser.timezone=UTC","-Dfile.encoding=UTF-8","-XX:+ExitOnOutOfMemoryError","-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager","--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED","--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED","--add-opens=java.base/java.lang=ALL-UNNAMED","--add-opens=java.base/java.io=ALL-UNNAMED","--add-opens=java.base/java.nio=ALL-UNNAMED","--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED","--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]
         druid.indexer.task.restoreTasksOnRestart=true
-    historicals:
+    historicalstier1:
       nodeType: "historical"
       druid.port: 8080
       nodeConfigMountPath: "/opt/druid/conf/druid/cluster/data/historical"

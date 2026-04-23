@@ -118,5 +118,6 @@ done
 
 # Start testing use-cases
 bash e2e/test-extra-common-config.sh
+bash e2e/test-rolling-deploy-ordering.sh
 kind delete cluster
 

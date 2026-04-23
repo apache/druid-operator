@@ -1,0 +1,188 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+# E2E fixture for the deterministic rolling deploy ordering test.
+# Defines two StatefulSets that share the "historical" NodeType
+# (historicalstier1 and historicalstier2) so the test can verify that
+# the operator rolls them out one-at-a-time rather than concurrently.
+apiVersion: "druid.apache.org/v1alpha1"
+kind: "Druid"
+metadata:
+  name: rolling-deploy-cluster
+spec:
+  image: apache/druid:25.0.0
+  startScript: /druid.sh
+  rollingDeploy: true
+  podLabels:
+    environment: stage
+  podAnnotations:
+    dummy: k8s_extn_needs_atleast_one_annotation
+  readinessProbe:
+    httpGet:
+      path: /status/health
+      port: 8088
+  securityContext:
+    fsGroup: 0
+    runAsUser: 0
+    runAsGroup: 0
+  containerSecurityContext:
+    privileged: true
+  services:
+    - spec:
+        type: ClusterIP
+        clusterIP: None
+  commonConfigMountPath: "/opt/druid/conf/druid/cluster/_common"
+  jvm.options: |-
+    -server
+    -XX:MaxDirectMemorySize=10240g
+    -Duser.timezone=UTC
+    -Dfile.encoding=UTF-8
+    -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+  common.runtime.properties: |
+    druid.zk.service.enabled=false
+    druid.discovery.type=k8s
+    druid.discovery.k8s.clusterIdentifier=druid-it
+    druid.serverview.type=http
+    druid.coordinator.loadqueuepeon.type=http
+    druid.indexer.runner.type=httpRemote
+    druid.metadata.storage.type=derby
+    druid.metadata.storage.connector.connectURI=jdbc:derby://localhost:1527/var/druid/metadata.db;create=true
+    druid.metadata.storage.connector.host=localhost
+    druid.metadata.storage.connector.port=1527
+    druid.metadata.storage.connector.createTables=true
+    druid.storage.type=local
+    druid.storage.storageDirectory=/druid/deepstorage
+    druid.extensions.loadList=["druid-kubernetes-extensions"]
+    druid.selectors.indexing.serviceName=druid/overlord
+    druid.selectors.coordinator.serviceName=druid/coordinator
+    druid.lookup.enableLookupSyncOnStartup=false
+  env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+  nodes:
+    coordinators:
+      nodeType: "coordinator"
+      druid.port: 8088
+      services:
+        - spec:
+            type: ClusterIP
+            clusterIP: None
+      nodeConfigMountPath: "/opt/druid/conf/druid/cluster/master/coordinator-overlord"
+      replicas: 1
+      runtime.properties: |
+        druid.service=druid/coordinator
+        druid.coordinator.startDelay=PT30S
+        druid.coordinator.period=PT30S
+        druid.coordinator.asOverlord.enabled=true
+        druid.coordinator.asOverlord.overlordService=druid/overlord
+        druid.indexer.queue.startDelay=PT30S
+      extra.jvm.options: |-
+        -Xmx512m
+        -Xms512m
+
+    brokers:
+      nodeType: "broker"
+      druid.port: 8088
+      services:
+        - spec:
+            type: ClusterIP
+            clusterIP: None
+      nodeConfigMountPath: "/opt/druid/conf/druid/cluster/query/broker"
+      replicas: 1
+      runtime.properties: |
+        druid.service=druid/broker
+        druid.broker.http.numConnections=5
+        druid.server.http.numThreads=40
+        druid.processing.buffer.sizeBytes=25000000
+        druid.sql.enable=true
+      extra.jvm.options: |-
+        -Xmx512m
+        -Xms512m
+
+    # Two historical specs sharing the SAME NodeType ("historical").
+    # This is the case where the previous map-iteration ordering would
+    # flap between reconciles. With the deterministic ordering fix,
+    # historicalstier1 rolls out fully before historicalstier2.
+    historicalstier1:
+      nodeType: "historical"
+      druid.port: 8088
+      services:
+        - spec:
+            type: ClusterIP
+            clusterIP: None
+      nodeConfigMountPath: "/opt/druid/conf/druid/cluster/data/historical"
+      replicas: 1
+      runtime.properties: |
+        druid.service=druid/historical
+        druid.processing.buffer.sizeBytes=25000000
+        druid.processing.numThreads=2
+        druid.segmentCache.locations=[{"path":"/druid/data/segments","maxSize":10737418240}]
+        druid.server.maxSize=10737418240
+      extra.jvm.options: |-
+        -Xmx512m
+        -Xms512m
+
+    historicalstier2:
+      nodeType: "historical"
+      druid.port: 8088
+      services:
+        - spec:
+            type: ClusterIP
+            clusterIP: None
+      nodeConfigMountPath: "/opt/druid/conf/druid/cluster/data/historical"
+      replicas: 1
+      runtime.properties: |
+        druid.service=druid/historical
+        druid.processing.buffer.sizeBytes=25000000
+        druid.processing.numThreads=2
+        druid.segmentCache.locations=[{"path":"/druid/data/segments","maxSize":10737418240}]
+        druid.server.maxSize=10737418240
+      extra.jvm.options: |-
+        -Xmx512m
+        -Xms512m
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: druid-cluster-rolling
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - configmaps
+  verbs:
+  - '*'
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: druid-cluster-rolling
+subjects:
+- kind: ServiceAccount
+  name: default
+roleRef:
+  kind: Role
+  name: druid-cluster-rolling
+  apiGroup: rbac.authorization.k8s.io
