@@ -252,6 +252,17 @@ type DruidSpec struct {
 	// +optional
 	Affinity *v1.Affinity `json:"affinity,omitempty"`
 
+	// OrderOfUpgrade defines the order in which node types are upgraded during a rolling deploy.
+	// If not specified, the default order is used: historical, overlord, middleManager, indexer, broker, coordinator, router.
+	// +optional
+	OrderOfUpgrade []string `json:"orderOfUpgrade,omitempty"`
+
+	// OrderOfUpgradeOfTiers defines the order of tier upgrades within each node type.
+	// The key is the node type (e.g. "historical") and the value is an ordered list of tier names.
+	// Nodes matching a tier earlier in the list are upgraded first.
+	// +optional
+	OrderOfUpgradeOfTiers map[string][]string `json:"orderOfUpgradeOfTiers,omitempty"`
+
 	// Nodes a list of `Druid` Node types and their configurations.
 	// `DruidSpec` is used to create Kubernetes workload specs. Many of the fields above can be overridden at the specific
 	// `NodeSpec` level.
@@ -328,6 +339,12 @@ type DruidNodeSpec struct {
 	// +required
 	// +kubebuilder:validation:Enum:=historical;overlord;middleManager;indexer;broker;coordinator;router
 	NodeType string `json:"nodeType"`
+
+	// Tier defines the tier this node belongs to within its node type (e.g. "hot", "cold", "glacier").
+	// Used together with OrderOfUpgradeOfTiers in DruidSpec to control the order of upgrades
+	// for nodes of the same type.
+	// +optional
+	Tier string `json:"tier,omitempty"`
 
 	// DruidPort Used by the `Druid` process.
 	// +required
