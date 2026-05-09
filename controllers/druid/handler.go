@@ -147,6 +147,12 @@ func deployDruidCluster(ctx context.Context, sdk client.Client, m *v1alpha1.Drui
 
 		nodeSpec.Ports = append(nodeSpec.Ports, v1.ContainerPort{ContainerPort: nodeSpec.DruidPort, Name: "druid-port"})
 
+		if m.Spec.MiddleManagerDrainStrategy != nil && nodeSpec.NodeType == middleManager && nodeSpec.Kind == "Deployment" {
+			logger.Info("MiddleManager drain strategy is only supported for StatefulSet workloads; using standard Deployment rollout",
+				"nodeSpecUniqueStr", nodeSpecUniqueStr,
+				"namespace", m.Namespace)
+		}
+
 		if nodeSpec.Kind == "Deployment" {
 			if deployCreateUpdateStatus, err := sdkCreateOrUpdateAsNeeded(ctx, sdk,
 				func() (object, error) {
@@ -183,13 +189,22 @@ func deployDruidCluster(ctx context.Context, sdk client.Client, m *v1alpha1.Drui
 				}
 			}
 
+			if m.Generation > 1 && nodeSpec.NodeType == middleManager && m.Spec.MiddleManagerDrainStrategy == nil {
+				cleanupStaleMiddleManagerDrainState(ctx, sdk, m, nodeSpecUniqueStr, emitEvents)
+			}
+
+			stsUpdaterFn := noopUpdaterFn
+			if m.Generation > 1 && nodeSpec.NodeType == middleManager && m.Spec.MiddleManagerDrainStrategy != nil {
+				stsUpdaterFn = middleManagerDrainStatefulSetUpdaterFn
+			}
+
 			// Create/Update StatefulSet
 			if stsCreateUpdateStatus, err := sdkCreateOrUpdateAsNeeded(ctx, sdk,
 				func() (object, error) {
 					return makeStatefulSet(&nodeSpec, m, lm, nodeSpecUniqueStr, fmt.Sprintf("%s-%s", commonConfigSHA, nodeConfigSHA), firstServiceName)
 				},
 				func() object { return &appsv1.StatefulSet{} },
-				statefulSetIsEquals, noopUpdaterFn, m, statefulSetNames, emitEvents); err != nil {
+				statefulSetIsEquals, stsUpdaterFn, m, statefulSetNames, emitEvents); err != nil {
 				return err
 			} else if m.Spec.RollingDeploy {
 
@@ -208,6 +223,16 @@ func deployDruidCluster(ctx context.Context, sdk client.Client, m *v1alpha1.Drui
 					//Check StatefulSet rolling update status, if in-progress then stop here
 					done, err := isObjFullyDeployed(ctx, sdk, nodeSpec, nodeSpecUniqueStr, m, func() object { return &appsv1.StatefulSet{} }, emitEvents)
 					if !done {
+						if nodeSpec.NodeType == middleManager && m.Spec.MiddleManagerDrainStrategy != nil {
+							if err := processMiddleManagerRollingRestart(ctx, sdk, m, nodeSpecUniqueStr, m.Spec.MiddleManagerDrainStrategy, emitEvents); err != nil {
+								return err
+							}
+							// The drain state machine owns the StatefulSet partition while a
+							// MiddleManager rollout is in progress. Return immediately so
+							// sdkCreateOrUpdateAsNeeded is not re-entered in this reconcile
+							// and cannot overwrite the partition selected for the current phase.
+							return nil
+						}
 						return err
 					}
 				}
@@ -273,6 +298,7 @@ func deployDruidCluster(ctx context.Context, sdk client.Client, m *v1alpha1.Drui
 
 	//update status and delete unwanted resources
 	updatedStatus := v1alpha1.DruidClusterStatus{}
+	updatedStatus.MiddleManagerDrain = m.Status.MiddleManagerDrain
 
 	updatedStatus.StatefulSets = deleteUnusedResources(ctx, sdk, m, statefulSetNames, ls,
 		func() objectList { return &appsv1.StatefulSetList{} },

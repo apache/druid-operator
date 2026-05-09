@@ -1980,6 +1980,25 @@ spec:
                   stastd documentation is described in the following documentation:
                   https://druid.apache.org/docs/latest/development/extensions-contrib/statsd.html
                 type: string
+              middleManagerDrainStrategy:
+                description: |-
+                  MiddleManagerDrainStrategy enables operator-managed draining before
+                  MiddleManager StatefulSet pods are rolled. If nil, MiddleManagers use the
+                  standard StatefulSet rolling update behavior.
+                properties:
+                  drainTimeout:
+                    default: 1h
+                    description: |-
+                      DrainTimeout is the maximum time to wait for streaming ingestion tasks to
+                      drain before allowing Kubernetes to replace the MiddleManager pod.
+                    type: string
+                  podReadyTimeout:
+                    default: 30m
+                    description: |-
+                      PodReadyTimeout is the maximum time to wait for Kubernetes to replace the
+                      pod and for the replacement to become ready on the target StatefulSet revision.
+                    type: string
+                type: object
               nodeSelector:
                 additionalProperties:
                   type: string
@@ -11877,6 +11896,27 @@ spec:
                 items:
                   type: string
                 type: array
+              middleManagerDrain:
+                description: MiddleManagerDrainStatus reports an in-progress MiddleManager
+                  drain rollout.
+                properties:
+                  lastTransitionTime:
+                    format: date-time
+                    type: string
+                  message:
+                    type: string
+                  oldPodUID:
+                    type: string
+                  phase:
+                    type: string
+                  podName:
+                    type: string
+                  podOrdinal:
+                    format: int32
+                    type: integer
+                  statefulSet:
+                    type: string
+                type: object
               persistentVolumeClaims:
                 items:
                   type: string

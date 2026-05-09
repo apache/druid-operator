@@ -182,3 +182,36 @@ func TestMakePath(t *testing.T) {
 		})
 	}
 }
+
+func TestMakeSQLPath(t *testing.T) {
+	tests := []struct {
+		name     string
+		baseURL  string
+		expected string
+	}{
+		{
+			name:     "RouterService",
+			baseURL:  "http://example-druid-service",
+			expected: "http://example-druid-service/druid/v2/sql",
+		},
+		{
+			name:     "BaseURLWithPath",
+			baseURL:  "http://example-druid-service/base",
+			expected: "http://example-druid-service/druid/v2/sql",
+		},
+		{
+			name:     "EmptyBaseURL",
+			baseURL:  "",
+			expected: "druid/v2/sql",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := MakeSQLPath(tt.baseURL)
+			if actual != tt.expected {
+				t.Errorf("MakeSQLPath() = %v, expected %v", actual, tt.expected)
+			}
+		})
+	}
+}
