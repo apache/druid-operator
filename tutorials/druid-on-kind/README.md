@@ -37,14 +37,14 @@ Create kind cluster on your machine.
 
 - Add Helm Repo
 ```
-helm repo add datainfra https://charts.datainfra.io
+helm repo add apache-druid https://apache.github.io/druid-operator
 helm repo update
 ```
 
 - Install Operator 
 ```
 # Install Druid operator using Helm
-helm -n druid-operator-system upgrade -i --create-namespace cluster-druid-operator datainfra/druid-operator
+helm -n druid-operator-system upgrade -i --create-namespace cluster-druid-operator apache-druid/druid-operator
 ```
 
 ## Apply Druid Customer Resource
