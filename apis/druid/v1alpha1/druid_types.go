@@ -451,6 +451,14 @@ type DruidNodeSpec struct {
 	// +optional
 	MaxUnavailable *int32 `json:"maxUnavailable,omitempty"`
 
+	// RevisionHistoryLimit is the number of old ReplicaSets (for Deployment
+	// node types) or ControllerRevisions (for StatefulSet node types) to retain
+	// to allow rollback. Bounding it lets Kubernetes garbage-collect superseded
+	// pod-template revisions that otherwise keep references to old container
+	// image tags. If nil, the Kubernetes default of 10 is used.
+	// +optional
+	RevisionHistoryLimit *int32 `json:"revisionHistoryLimit,omitempty"`
+
 	// UpdateStrategy
 	// +optional
 	UpdateStrategy *appsv1.StatefulSetUpdateStrategy `json:"updateStrategy,omitempty"`
