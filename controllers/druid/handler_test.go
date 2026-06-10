@@ -113,6 +113,54 @@ var _ = Describe("Test handler", func() {
 			Expect(actual).Should(Equal(expected))
 		})
 
+		It("should set revisionHistoryLimit on the statefulset when specified on the node spec", func() {
+			By("By setting revisionHistoryLimit on the node spec")
+			clusterSpec, err := readDruidClusterSpecFromFile("testdata/druid-test-cr.yaml")
+			Expect(err).Should(BeNil())
+
+			nodeSpecUniqueStr := makeNodeSpecificUniqueString(clusterSpec, "brokers")
+			nodeSpec := clusterSpec.Spec.Nodes["brokers"]
+			limit := int32(2)
+			nodeSpec.RevisionHistoryLimit = &limit
+
+			actual, _ := makeStatefulSet(&nodeSpec, clusterSpec, makeLabelsForNodeSpec(&nodeSpec, clusterSpec, clusterSpec.Name, nodeSpecUniqueStr), nodeSpecUniqueStr, "blah", nodeSpecUniqueStr)
+
+			Expect(actual.Spec.RevisionHistoryLimit).ShouldNot(BeNil())
+			Expect(*actual.Spec.RevisionHistoryLimit).Should(Equal(int32(2)))
+		})
+
+		It("should set revisionHistoryLimit on the deployment when specified on the node spec", func() {
+			By("By setting revisionHistoryLimit on the node spec")
+			clusterSpec, err := readDruidClusterSpecFromFile("testdata/druid-test-cr.yaml")
+			Expect(err).Should(BeNil())
+
+			nodeSpecUniqueStr := makeNodeSpecificUniqueString(clusterSpec, "brokers")
+			nodeSpec := clusterSpec.Spec.Nodes["brokers"]
+			limit := int32(2)
+			nodeSpec.RevisionHistoryLimit = &limit
+
+			actual, _ := makeDeployment(&nodeSpec, clusterSpec, makeLabelsForNodeSpec(&nodeSpec, clusterSpec, clusterSpec.Name, nodeSpecUniqueStr), nodeSpecUniqueStr, "blah", nodeSpecUniqueStr)
+
+			Expect(actual.Spec.RevisionHistoryLimit).ShouldNot(BeNil())
+			Expect(*actual.Spec.RevisionHistoryLimit).Should(Equal(int32(2)))
+		})
+
+		It("should leave revisionHistoryLimit unset (Kubernetes default) when not specified on the node spec", func() {
+			By("By not setting revisionHistoryLimit on the node spec")
+			clusterSpec, err := readDruidClusterSpecFromFile("testdata/druid-test-cr.yaml")
+			Expect(err).Should(BeNil())
+
+			nodeSpecUniqueStr := makeNodeSpecificUniqueString(clusterSpec, "brokers")
+			nodeSpec := clusterSpec.Spec.Nodes["brokers"]
+			Expect(nodeSpec.RevisionHistoryLimit).Should(BeNil())
+
+			sts, _ := makeStatefulSet(&nodeSpec, clusterSpec, makeLabelsForNodeSpec(&nodeSpec, clusterSpec, clusterSpec.Name, nodeSpecUniqueStr), nodeSpecUniqueStr, "blah", nodeSpecUniqueStr)
+			deploy, _ := makeDeployment(&nodeSpec, clusterSpec, makeLabelsForNodeSpec(&nodeSpec, clusterSpec, clusterSpec.Name, nodeSpecUniqueStr), nodeSpecUniqueStr, "blah", nodeSpecUniqueStr)
+
+			Expect(sts.Spec.RevisionHistoryLimit).Should(BeNil())
+			Expect(deploy.Spec.RevisionHistoryLimit).Should(BeNil())
+		})
+
 		It("should make PDB for broker", func() {
 			By("By making PDB for broker")
 			filePath := "testdata/druid-test-cr.yaml"
