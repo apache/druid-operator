@@ -374,6 +374,10 @@ spec:
       druid.port: 8088
       nodeConfigMountPath: "/opt/druid/conf/druid/cluster/query/router"
       replicas: 1
+      # Optional: bound the retained ReplicaSet history for this Deployment node
+      # so superseded image tags get garbage-collected. Omit to keep the
+      # Kubernetes default of 10. Applies to StatefulSet nodes too.
+      revisionHistoryLimit: 2
       runtime.properties: |
         druid.service=druid/router
 
