@@ -4,6 +4,12 @@ github:
   description: 'Apache Druid Operator: a Kubernetes operator for Apache Druid.'
   homepage: https://druid.apache.org/
 
+  # Enable GitHub features to mirror the main apache/druid repository.
+  features:
+    issues: true
+    wiki: true
+    projects: true
+
   # Attempt to make the auto-generated github emails more easily readable in email clients.
   # Configuration adapted from https://github.com/apache/plc4x/blob/develop/.asf.yaml.
   custom_subjects:
