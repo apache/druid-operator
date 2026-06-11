@@ -25,6 +25,7 @@ The operator simplifies the management of Druid clusters with its custom logic t
 ## Druid Operator Documentation
 
 * [Getting Started](./getting_started.md)
+* [Helm Chart Release Playbook](./helm-chart-release.md)
 * API Specifications
   * [Druid API](./api_specifications/druid.md)
 * [Supported Features](./features.md)

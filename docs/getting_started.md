@@ -18,7 +18,7 @@ under the License.
 -->
 # Installation
 
-The Helm chart is available at the [DataInfra chart repository](https://charts.datainfra.io).
+The Helm chart is available at the [Apache Druid Operator chart repository](https://apache.github.io/druid-operator).
 
 The operator can be deployed in one of the following modes:
 - namespace scope (default)
@@ -26,7 +26,7 @@ The operator can be deployed in one of the following modes:
 
 ### Add the Helm repository
 ```shell
-helm repo add datainfra https://charts.datainfra.io
+helm repo add apache-druid https://apache.github.io/druid-operator
 helm repo update
 ```
 
@@ -34,23 +34,23 @@ helm repo update
 `NOTE:` the default installation restrics the reconciliation on the default and kube-system namespaces 
 ```bash
 # Install Druid operator using Helm
-helm -n druid-operator-system upgrade -i --create-namespace cluster-druid-operator datainfra/druid-operator
+helm -n druid-operator-system upgrade -i --create-namespace cluster-druid-operator apache-druid/druid-operator
 
 # ... or generate manifest.yaml to install using other means:
-helm -n druid-operator-system template --create-namespace cluster-druid-operator datainfra/druid-operator > manifest.yaml
+helm -n druid-operator-system template --create-namespace cluster-druid-operator apache-druid/druid-operator > manifest.yaml
 ```
 
 ### Custom Namespaces Installation
 ```bash
 # Install Druid operator using Helm
 kubectl create ns mynamespace
-helm -n druid-operator-system upgrade -i --create-namespace --set env.WATCH_NAMESPACE="mynamespace" namespaced-druid-operator datainfra/druid-operator
+helm -n druid-operator-system upgrade -i --create-namespace --set env.WATCH_NAMESPACE="mynamespace" namespaced-druid-operator apache-druid/druid-operator
 
 # Override the default namespace DENY_LIST
-helm -n druid-operator-system upgrade -i --create-namespace --set env.DENY_LIST="kube-system" namespaced-druid-operator datainfra/druid-operator
+helm -n druid-operator-system upgrade -i --create-namespace --set env.DENY_LIST="kube-system" namespaced-druid-operator apache-druid/druid-operator
 
 # ... or generate manifest.yaml to install using other means:
-helm -n druid-operator-system template --set env.WATCH_NAMESPACE=""  namespaced-druid-operator datainfra/druid-operator --create-namespace > manifest.yaml
+helm -n druid-operator-system template --set env.WATCH_NAMESPACE=""  namespaced-druid-operator apache-druid/druid-operator --create-namespace > manifest.yaml
 ```
 
 ### Uninstall
