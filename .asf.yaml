@@ -4,7 +4,6 @@ github:
   description: 'Apache Druid Operator: a Kubernetes operator for Apache Druid.'
   homepage: https://druid.apache.org/
 
-  # Enable GitHub features to mirror the main apache/druid repository.
   features:
     issues: true
     wiki: true
