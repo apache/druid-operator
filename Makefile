@@ -37,6 +37,14 @@ MINIO_VERSION ?= "6.0.4"
 NAMESPACE_DRUID ?= "druid"
 # Set to false to skip the Apache RAT license audit
 ENABLE_RAT ?= true
+# Helm chart packaging defaults
+HELM_CHART_DIR ?= chart
+HELM_DIST_DIR ?= dist/helm
+HELM_REPO_URL ?= https://apache.github.io/druid-operator
+HELM_EXISTING_INDEX ?=
+HELM_CHART_NAME ?= $(shell awk '/^name:/{print $$2;exit}' $(HELM_CHART_DIR)/Chart.yaml)
+HELM_CHART_VERSION ?= $(shell awk '/^version:/{print $$2;exit}' $(HELM_CHART_DIR)/Chart.yaml)
+HELM_PACKAGE_FILE ?= $(HELM_DIST_DIR)/$(HELM_CHART_NAME)-$(HELM_CHART_VERSION).tgz
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.0
@@ -143,6 +151,8 @@ rat: rat-jar ## Run Apache RAT license audit (set ENABLE_RAT=false to skip).
 	  --input-exclude "**/zz_generated.*.go" \
 	  --input-exclude "**/PROJECT" \
 	  --input-exclude "**/.asf.yaml" \
+	  --input-exclude "cover.out" \
+	  --input-exclude "dist/**" \
 	  -- .
 else
 .PHONY: rat
@@ -284,6 +294,23 @@ helm-lint: ## Lint Helm chart.
 helm-template: ## Run Helm template.
 	helm -n druid-operator-system template --create-namespace ${NAMESPACE_DRUID_OPERATOR} ./chart --debug
 
+.PHONY: helm-package
+helm-package: ## Package the Helm chart and update a local Helm repository index.
+	@mkdir -p $(HELM_DIST_DIR)
+	@rm -f $(HELM_PACKAGE_FILE)
+	@echo "Packaging $(HELM_CHART_NAME) chart version $(HELM_CHART_VERSION) into $(HELM_DIST_DIR)"
+	helm package $(HELM_CHART_DIR) --destination $(HELM_DIST_DIR)
+	@tar -tzf $(HELM_PACKAGE_FILE) | grep -Eq '^[^/]+/LICENSE$$'
+	@tar -tzf $(HELM_PACKAGE_FILE) | grep -Eq '^[^/]+/NOTICE$$'
+	@if [ -n "$(HELM_EXISTING_INDEX)" ] && [ -f "$(HELM_EXISTING_INDEX)" ]; then \
+		echo "Merging repo index with $(HELM_EXISTING_INDEX)"; \
+		helm repo index $(HELM_DIST_DIR) --url $(HELM_REPO_URL) --merge $(HELM_EXISTING_INDEX); \
+	else \
+		echo "Generating fresh repo index for $(HELM_REPO_URL)"; \
+		helm repo index $(HELM_DIST_DIR) --url $(HELM_REPO_URL); \
+	fi
+	@echo "Helm chart artifacts are available under $(HELM_DIST_DIR)"
+
 ##@ Documentation
 
 .PHONY: api-docs
@@ -338,7 +365,7 @@ $(GEN_CRD_API_REFERENCE_DOCS): $(LOCALBIN)
 
 .PHONY: rat-jar
 rat-jar: $(RAT_JAR) ## Download Apache RAT jar locally if necessary.
-$(RAT_JAR): $(LOCALBIN)
+$(RAT_JAR): | $(LOCALBIN)
 	mkdir -p /tmp/rat-download && \
 	curl -sSL "https://archive.apache.org/dist/creadur/apache-rat-$(RAT_VERSION)/apache-rat-$(RAT_VERSION)-bin.tar.gz" \
 	  -o /tmp/rat-download/rat.tar.gz && \

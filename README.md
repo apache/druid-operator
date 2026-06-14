@@ -18,3 +18,11 @@ under the License.
 -->
 
 # Apache Druid Operator
+
+## Helm Chart
+
+```bash
+helm repo add apache-druid https://apache.github.io/druid-operator
+helm repo update
+helm -n druid-operator-system upgrade -i --create-namespace cluster-druid-operator apache-druid/druid-operator
+```
