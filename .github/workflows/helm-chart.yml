@@ -58,8 +58,8 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
-      - name: Set up Helm
-        uses: azure/setup-helm@v4
+      - name: Verify Helm
+        run: helm version
 
       - name: Package chart
         run: |
