@@ -374,6 +374,12 @@ spec:
       druid.port: 8088
       nodeConfigMountPath: "/opt/druid/conf/druid/cluster/query/router"
       replicas: 1
+      # Optional: cap the controller's retained revision history. For Deployment
+      # node types (like this router) it bounds old ReplicaSets, so superseded
+      # pod templates / image tags are garbage-collected instead of lingering;
+      # for StatefulSet node types it bounds ControllerRevisions. Omit to keep
+      # the Kubernetes default of 10.
+      revisionHistoryLimit: 2
       runtime.properties: |
         druid.service=druid/router
 

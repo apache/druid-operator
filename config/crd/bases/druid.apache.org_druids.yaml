@@ -5638,6 +5638,15 @@ spec:
                             More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                           type: object
                       type: object
+                    revisionHistoryLimit:
+                      description: |-
+                        RevisionHistoryLimit is the number of old ReplicaSets (for Deployment
+                        node types) or ControllerRevisions (for StatefulSet node types) to retain
+                        to allow rollback. Bounding it lets Kubernetes garbage-collect superseded
+                        pod-template revisions that otherwise keep references to old container
+                        image tags. If nil, the Kubernetes default of 10 is used.
+                      format: int32
+                      type: integer
                     runtime.properties:
                       description: RuntimeProperties Additional runtime configuration
                         for the specific workload.

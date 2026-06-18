@@ -1070,6 +1070,7 @@ func makeStatefulSetSpec(nodeSpec *v1alpha1.DruidNodeSpec, m *v1alpha1.Druid, ls
 			MatchLabels: ls,
 		},
 		Replicas:             &nodeSpec.Replicas,
+		RevisionHistoryLimit: nodeSpec.RevisionHistoryLimit,
 		PodManagementPolicy:  appsv1.PodManagementPolicyType(firstNonEmptyStr(firstNonEmptyStr(string(nodeSpec.PodManagementPolicy), string(m.Spec.PodManagementPolicy)), string(appsv1.ParallelPodManagement))),
 		UpdateStrategy:       *updateStrategy,
 		Template:             makePodTemplate(nodeSpec, m, ls, nodeSpecificUniqueString, configMapSHA),
@@ -1086,8 +1087,9 @@ func makeDeploymentSpec(nodeSpec *v1alpha1.DruidNodeSpec, m *v1alpha1.Druid, ls 
 		Selector: &metav1.LabelSelector{
 			MatchLabels: ls,
 		},
-		Replicas: &nodeSpec.Replicas,
-		Template: makePodTemplate(nodeSpec, m, ls, nodeSpecificUniqueString, configMapSHA),
+		Replicas:             &nodeSpec.Replicas,
+		RevisionHistoryLimit: nodeSpec.RevisionHistoryLimit,
+		Template:             makePodTemplate(nodeSpec, m, ls, nodeSpecificUniqueString, configMapSHA),
 		Strategy: appsv1.DeploymentStrategy{
 			Type:          "RollingUpdate",
 			RollingUpdate: getRollingUpdateStrategy(nodeSpec),
