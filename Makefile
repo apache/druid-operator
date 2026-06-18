@@ -150,7 +150,6 @@ rat: rat-jar ## Run Apache RAT license audit (set ENABLE_RAT=false to skip).
 	  --input-exclude "**/*.sh" \
 	  --input-exclude "**/zz_generated.*.go" \
 	  --input-exclude "**/PROJECT" \
-	  --input-exclude "**/.asf.yaml" \
 	  --input-exclude "cover.out" \
 	  --input-exclude "dist/**" \
 	  -- .
