@@ -367,6 +367,19 @@ bool
 </tr>
 <tr>
 <td>
+<code>disablePVCAnnotationUpdate</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DisablePVCUpdates When set to true, operator will not patch PVCs when VolumeClaimTemplate annotations or volumeAttributeClassName are updated.
+When disabled (false), updating VolumeClaimTemplate annotations or volumeAttributeClassName will patch existing PVCs and recreate the StatefulSet.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>deleteOrphanPvc</code><br>
 <em>
 bool
@@ -2193,6 +2206,19 @@ bool
 <td>
 <em>(Optional)</em>
 <p>DisablePVCDeletionFinalizer Whether PVCs shall be deleted on the deletion of the Druid cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>disablePVCAnnotationUpdate</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DisablePVCUpdates When set to true, operator will not patch PVCs when VolumeClaimTemplate annotations or volumeAttributeClassName are updated.
+When disabled (false), updating VolumeClaimTemplate annotations or volumeAttributeClassName will patch existing PVCs and recreate the StatefulSet.</p>
 </td>
 </tr>
 <tr>

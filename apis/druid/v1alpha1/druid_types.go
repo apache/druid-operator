@@ -133,6 +133,12 @@ type DruidSpec struct {
 	// +kubebuilder:default:=false
 	DisablePVCDeletionFinalizer bool `json:"disablePVCDeletionFinalizer,omitempty"`
 
+	// DisablePVCUpdates When set to true, operator will not patch PVCs when VolumeClaimTemplate annotations or volumeAttributeClassName are updated.
+	// When disabled (false), updating VolumeClaimTemplate annotations or volumeAttributeClassName will patch existing PVCs and recreate the StatefulSet.
+	// +optional
+	// +kubebuilder:default:=false
+	DisablePVCUpdates bool `json:"disablePVCAnnotationUpdate,omitempty"`
+
 	// DeleteOrphanPvc Orphaned (unmounted PVCs) shall be cleaned up by the operator.
 	// +optional
 	// +kubebuilder:default:=true
