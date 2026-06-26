@@ -1506,8 +1506,8 @@ spec:
               defaultProbes:
                 default: true
                 description: |-
-                  DefaultProbes If set to true this will add default probes (liveness / readiness / startup) for all druid components
-                  but it won't override existing probes
+                  DefaultProbes defaults to true. When enabled, adds default probes (liveness / readiness / startup)
+                  for all druid components but won't override existing probes. Set to false to disable.
                 type: boolean
               deleteOrphanPvc:
                 default: true

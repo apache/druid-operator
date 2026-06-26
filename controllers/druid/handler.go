@@ -954,33 +954,33 @@ func getAffinity(nodeSpec *v1alpha1.DruidNodeSpec, m *v1alpha1.Druid) *v1.Affini
 }
 
 func setLivenessProbe(nodeSpec *v1alpha1.DruidNodeSpec, m *v1alpha1.Druid) *v1.Probe {
-	probeType := "liveness"
+	probeType := probeTypeLiveness
 	livenessProbe := updateDefaultPortInProbe(
 		firstNonNilValue(nodeSpec.LivenessProbe, m.Spec.LivenessProbe).(*v1.Probe),
 		nodeSpec.DruidPort)
-	if livenessProbe == nil && m.Spec.DefaultProbes {
+	if livenessProbe == nil && (m.Spec.DefaultProbes == nil || *m.Spec.DefaultProbes) {
 		livenessProbe = setDefaultProbe(nodeSpec.DruidPort, nodeSpec.NodeType, probeType)
 	}
 	return livenessProbe
 }
 
 func setReadinessProbe(nodeSpec *v1alpha1.DruidNodeSpec, m *v1alpha1.Druid) *v1.Probe {
-	probeType := "readiness"
+	probeType := probeTypeReadiness
 	readinessProbe := updateDefaultPortInProbe(
 		firstNonNilValue(nodeSpec.ReadinessProbe, m.Spec.ReadinessProbe).(*v1.Probe),
 		nodeSpec.DruidPort)
-	if readinessProbe == nil && m.Spec.DefaultProbes {
+	if readinessProbe == nil && (m.Spec.DefaultProbes == nil || *m.Spec.DefaultProbes) {
 		readinessProbe = setDefaultProbe(nodeSpec.DruidPort, nodeSpec.NodeType, probeType)
 	}
 	return readinessProbe
 }
 
 func setStartUpProbe(nodeSpec *v1alpha1.DruidNodeSpec, m *v1alpha1.Druid) *v1.Probe {
-	probeType := "startup"
+	probeType := probeTypeStartup
 	startUpProbe := updateDefaultPortInProbe(
 		firstNonNilValue(nodeSpec.StartUpProbe, m.Spec.StartUpProbe).(*v1.Probe),
 		nodeSpec.DruidPort)
-	if startUpProbe == nil && m.Spec.DefaultProbes {
+	if startUpProbe == nil && (m.Spec.DefaultProbes == nil || *m.Spec.DefaultProbes) {
 		startUpProbe = setDefaultProbe(nodeSpec.DruidPort, nodeSpec.NodeType, probeType)
 	}
 	return startUpProbe
@@ -1166,20 +1166,34 @@ func setDefaultProbe(defaultPort int32, nodeType string, probeType string) *v1.P
 		FailureThreshold:    10,
 	}
 
-	if nodeType == historical && probeType != "liveness" {
+	// Liveness probes use the default /status/health for all node types.
+	if probeType == probeTypeLiveness {
+		return probe
+	}
+
+	if probeType == probeTypeReadiness && nodeType == historical {
 		probe.HTTPGet.Path = "/druid/historical/v1/readiness"
 		probe.FailureThreshold = 20
 	}
-	if nodeType == broker && probeType != "liveness" {
+
+	if probeType == probeTypeReadiness && nodeType == broker {
 		probe.HTTPGet.Path = "/druid/broker/v1/readiness"
 		probe.FailureThreshold = 20
 	}
 
-	if nodeType == historical && probeType == "startup" {
+	if probeType == probeTypeStartup && nodeType == historical {
+		probe.HTTPGet.Path = "/druid/historical/v1/readiness"
 		probe.InitialDelaySeconds = 180
 		probe.PeriodSeconds = 30
 		probe.TimeoutSeconds = 10
+		probe.FailureThreshold = 20
 	}
+
+	if probeType == probeTypeStartup && nodeType == broker {
+		probe.HTTPGet.Path = "/druid/broker/v1/readiness"
+		probe.FailureThreshold = 20
+	}
+
 	return probe
 }
 

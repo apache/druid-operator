@@ -28,4 +28,8 @@ const (
 	indexer       = "indexer"
 	historical    = "historical"
 	router        = "router"
+
+	probeTypeLiveness  = "liveness"
+	probeTypeReadiness = "readiness"
+	probeTypeStartup   = "startup"
 )

@@ -1,21 +1,3 @@
-<!--
-Licensed to the Apache Software Foundation (ASF) under one
-or more contributor license agreements.  See the NOTICE file
-distributed with this work for additional information
-regarding copyright ownership.  The ASF licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
--->
 <h1>Druid API reference</h1>
 <p>Packages:</p>
 <ul class="simple">
@@ -24,6 +6,20 @@ under the License.
 </li>
 </ul>
 <h2 id="druid.apache.org/v1alpha1">druid.apache.org/v1alpha1</h2>
+<p>Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+&ldquo;License&rdquo;); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at</p>
+<p><a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+<p>Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+&ldquo;AS IS&rdquo; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.</p>
 Resource Types:
 <ul class="simple"></ul>
 <h3 id="druid.apache.org/v1alpha1.AdditionalContainer">AdditionalContainer
@@ -791,8 +787,8 @@ bool
 </td>
 <td>
 <em>(Optional)</em>
-<p>DefaultProbes If set to true this will add default probes (liveness / readiness / startup) for all druid components
-but it won&rsquo;t override existing probes</p>
+<p>DefaultProbes defaults to true. When enabled, adds default probes (liveness / readiness / startup)
+for all druid components but won&rsquo;t override existing probes. Set to false to disable.</p>
 </td>
 </tr>
 <tr>
@@ -2621,8 +2617,8 @@ bool
 </td>
 <td>
 <em>(Optional)</em>
-<p>DefaultProbes If set to true this will add default probes (liveness / readiness / startup) for all druid components
-but it won&rsquo;t override existing probes</p>
+<p>DefaultProbes defaults to true. When enabled, adds default probes (liveness / readiness / startup)
+for all druid components but won&rsquo;t override existing probes. Set to false to disable.</p>
 </td>
 </tr>
 <tr>

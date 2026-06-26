@@ -691,6 +691,11 @@ func (in *DruidSpec) DeepCopyInto(out *DruidSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.DefaultProbes != nil {
+		in, out := &in.DefaultProbes, &out.DefaultProbes
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Zookeeper != nil {
 		in, out := &in.Zookeeper, &out.Zookeeper
 		*out = new(ZookeeperSpec)
