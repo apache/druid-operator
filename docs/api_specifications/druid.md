@@ -1,21 +1,3 @@
-<!--
-Licensed to the Apache Software Foundation (ASF) under one
-or more contributor license agreements.  See the NOTICE file
-distributed with this work for additional information
-regarding copyright ownership.  The ASF licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
--->
 <h1>Druid API reference</h1>
 <p>Packages:</p>
 <ul class="simple">
@@ -24,6 +6,20 @@ under the License.
 </li>
 </ul>
 <h2 id="druid.apache.org/v1alpha1">druid.apache.org/v1alpha1</h2>
+<p>Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+&ldquo;License&rdquo;); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at</p>
+<p><a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+<p>Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+&ldquo;AS IS&rdquo; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.</p>
 Resource Types:
 <ul class="simple"></ul>
 <h3 id="druid.apache.org/v1alpha1.AdditionalContainer">AdditionalContainer
@@ -230,6 +226,88 @@ encoding/json.RawMessage
 <br/>
 <table>
 </table>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="druid.apache.org/v1alpha1.DeploymentLifecyclePhase">DeploymentLifecyclePhase
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#druid.apache.org/v1alpha1.DeploymentLifecycleStatus">DeploymentLifecycleStatus</a>)
+</p>
+<h3 id="druid.apache.org/v1alpha1.DeploymentLifecycleStatus">DeploymentLifecycleStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#druid.apache.org/v1alpha1.DruidClusterStatus">DruidClusterStatus</a>)
+</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>phase</code><br>
+<em>
+<a href="#druid.apache.org/v1alpha1.DeploymentLifecyclePhase">
+DeploymentLifecyclePhase
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>reason</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>observedGeneration</code><br>
+<em>
+int64
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>startedAt</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#time-v1-meta">
+Kubernetes meta/v1.Time
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>completedAt</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#time-v1-meta">
+Kubernetes meta/v1.Time
+</a>
+</em>
+</td>
+<td>
 </td>
 </tr>
 </tbody>
@@ -964,6 +1042,18 @@ DruidClusterStatus
 <tbody>
 <tr>
 <td>
+<code>deploymentLifecycle</code><br>
+<em>
+<a href="#druid.apache.org/v1alpha1.DeploymentLifecycleStatus">
+DeploymentLifecycleStatus
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
 <code>druidNodeStatus</code><br>
 <em>
 <a href="#druid.apache.org/v1alpha1.DruidNodeTypeStatus">
@@ -972,8 +1062,6 @@ DruidNodeTypeStatus
 </em>
 </td>
 <td>
-<p>INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-Important: Run &ldquo;make&rdquo; to regenerate code after modifying this file</p>
 </td>
 </tr>
 <tr>

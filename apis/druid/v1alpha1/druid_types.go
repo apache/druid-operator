@@ -570,20 +570,36 @@ type DruidNodeTypeStatus struct {
 	Reason                   string                 `json:"reason,omitempty"`
 }
 
+type DeploymentLifecyclePhase string
+
+const (
+	DeploymentLifecyclePending    DeploymentLifecyclePhase = "Pending"
+	DeploymentLifecycleInProgress DeploymentLifecyclePhase = "InProgress"
+	DeploymentLifecycleSucceeded  DeploymentLifecyclePhase = "Succeeded"
+)
+
+type DeploymentLifecycleStatus struct {
+	// +kubebuilder:validation:Enum=Pending;InProgress;Succeeded
+	Phase              DeploymentLifecyclePhase `json:"phase,omitempty"`
+	Reason             string                   `json:"reason,omitempty"`
+	ObservedGeneration int64                    `json:"observedGeneration,omitempty"`
+	StartedAt          *metav1.Time             `json:"startedAt,omitempty"`
+	CompletedAt        *metav1.Time             `json:"completedAt,omitempty"`
+}
+
 // DruidClusterStatus Defines the observed state of Druid.
 type DruidClusterStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-	DruidNodeStatus        DruidNodeTypeStatus `json:"druidNodeStatus,omitempty"`
-	StatefulSets           []string            `json:"statefulSets,omitempty"`
-	Deployments            []string            `json:"deployments,omitempty"`
-	Services               []string            `json:"services,omitempty"`
-	ConfigMaps             []string            `json:"configMaps,omitempty"`
-	PodDisruptionBudgets   []string            `json:"podDisruptionBudgets,omitempty"`
-	Ingress                []string            `json:"ingress,omitempty"`
-	HPAutoScalers          []string            `json:"hpAutoscalers,omitempty"`
-	Pods                   []string            `json:"pods,omitempty"`
-	PersistentVolumeClaims []string            `json:"persistentVolumeClaims,omitempty"`
+	DeploymentLifecycle    DeploymentLifecycleStatus `json:"deploymentLifecycle,omitempty"`
+	DruidNodeStatus        DruidNodeTypeStatus       `json:"druidNodeStatus,omitempty"`
+	StatefulSets           []string                  `json:"statefulSets,omitempty"`
+	Deployments            []string                  `json:"deployments,omitempty"`
+	Services               []string                  `json:"services,omitempty"`
+	ConfigMaps             []string                  `json:"configMaps,omitempty"`
+	PodDisruptionBudgets   []string                  `json:"podDisruptionBudgets,omitempty"`
+	Ingress                []string                  `json:"ingress,omitempty"`
+	HPAutoScalers          []string                  `json:"hpAutoscalers,omitempty"`
+	Pods                   []string                  `json:"pods,omitempty"`
+	PersistentVolumeClaims []string                  `json:"persistentVolumeClaims,omitempty"`
 }
 
 // Druid is the Schema for the druids API.

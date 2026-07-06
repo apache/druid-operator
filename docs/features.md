@@ -43,6 +43,12 @@ The reconciliation time can be adjusted - in the chart, add `env.RECONCILE_WAIT`
 in seconds.  
 Examples: "10s", "30s", "120s"
 
+The deployment lifecycle timeout can be adjusted with `env.DEPLOYMENT_LIFECYCLE_TIMEOUT`.
+It defaults to "96h". When the timeout is exceeded, the deployment lifecycle remains
+`InProgress` with a timeout reason and can still move to `Succeeded` when the existing
+deployment becomes ready. The `druid_operator_deployment_lifecycle_failed` metric is set
+to `1` while the deployment lifecycle is timed out.
+
 ## Finalizer in Druid CR
 The Druid operator supports provisioning of StatefulSets and Deployments. When a StatefulSet is created, 
 a PVC is created along. When the Druid CR is deleted, the StatefulSet controller does not delete the PVC's 

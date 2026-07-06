@@ -128,6 +128,23 @@ var _ = Describe("Druid Operator", func() {
 
 		})
 
+		It("records lifecycle status during real reconcile", func() {
+			lifecycleDruidCR, err := readDruidClusterSpecFromFile(filePath)
+			Expect(err).Should(BeNil())
+
+			lifecycleDruidCR.Name = fmt.Sprintf("lifecycle-status-%d", GinkgoRandomSeed())
+			Expect(k8sClient.Create(ctx, lifecycleDruidCR)).To(Succeed())
+
+			lifecycleStatus := &druidv1alpha1.Druid{}
+			Eventually(func() string {
+				err := k8sClient.Get(ctx, types.NamespacedName{Name: lifecycleDruidCR.Name, Namespace: lifecycleDruidCR.Namespace}, lifecycleStatus)
+				if err != nil {
+					return ""
+				}
+				return string(lifecycleStatus.Status.DeploymentLifecycle.Phase)
+			}, timeout, interval).Should(Equal(string(druidv1alpha1.DeploymentLifecycleInProgress)))
+		})
+
 		It("Test broker deployment", func() {
 			componentName := "brokers"
 			createdDeploy := &appsv1.Deployment{}
@@ -151,6 +168,7 @@ var _ = Describe("Druid Operator", func() {
 
 			By("By updating broker deployment replicas")
 			replicaCount := 2
+			Expect(k8sClient.Get(ctx, types.NamespacedName{Name: druidCR.Name, Namespace: druidCR.Namespace}, druid)).To(Succeed())
 			if druidRep, ok := druid.Spec.Nodes[componentName]; ok {
 				druidRep.Replicas = int32(replicaCount)
 				druid.Spec.Nodes[componentName] = druidRep
@@ -190,6 +208,7 @@ var _ = Describe("Druid Operator", func() {
 
 				By(fmt.Sprintf("By updating statefulset replicas %s ", stsName))
 				replicaCount := 2
+				Expect(k8sClient.Get(ctx, types.NamespacedName{Name: druidCR.Name, Namespace: druidCR.Namespace}, druid)).To(Succeed())
 				if druidRep, ok := druid.Spec.Nodes[componentName]; ok {
 					druidRep.Replicas = int32(replicaCount)
 					druid.Spec.Nodes[componentName] = druidRep
