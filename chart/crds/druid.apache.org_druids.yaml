@@ -11851,14 +11851,31 @@ spec:
                 items:
                   type: string
                 type: array
+              deploymentLifecycle:
+                properties:
+                  completedAt:
+                    format: date-time
+                    type: string
+                  observedGeneration:
+                    format: int64
+                    type: integer
+                  phase:
+                    enum:
+                    - Pending
+                    - InProgress
+                    - Succeeded
+                    type: string
+                  reason:
+                    type: string
+                  startedAt:
+                    format: date-time
+                    type: string
+                type: object
               deployments:
                 items:
                   type: string
                 type: array
               druidNodeStatus:
-                description: |-
-                  INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-                  Important: Run "make" to regenerate code after modifying this file
                 properties:
                   druidNode:
                     type: string

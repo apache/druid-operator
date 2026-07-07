@@ -61,12 +61,15 @@ const (
 	druidFinalizerFailed    druidEventReason = "DruidFinalizerFailed"
 	druidFinalizerSuccess   druidEventReason = "DruidFinalizerSuccess"
 
-	druidGetRouterSvcUrlFailed     druidEventReason = "DruidAPIGetRouterSvcUrlFailed"
-	druidGetAuthCredsFailed        druidEventReason = "DruidAPIGetAuthCredsFailed"
-	druidFetchCurrentConfigsFailed druidEventReason = "DruidAPIFetchCurrentConfigsFailed"
-	druidConfigComparisonFailed    druidEventReason = "DruidAPIConfigComparisonFailed"
-	druidUpdateConfigsFailed       druidEventReason = "DruidAPIUpdateConfigsFailed"
-	druidUpdateConfigsSuccess      druidEventReason = "DruidAPIUpdateConfigsSuccess"
+	druidGetRouterSvcUrlFailed        druidEventReason = "DruidAPIGetRouterSvcUrlFailed"
+	druidGetAuthCredsFailed           druidEventReason = "DruidAPIGetAuthCredsFailed"
+	druidFetchCurrentConfigsFailed    druidEventReason = "DruidAPIFetchCurrentConfigsFailed"
+	druidConfigComparisonFailed       druidEventReason = "DruidAPIConfigComparisonFailed"
+	druidUpdateConfigsFailed          druidEventReason = "DruidAPIUpdateConfigsFailed"
+	druidUpdateConfigsSuccess         druidEventReason = "DruidAPIUpdateConfigsSuccess"
+	druidDeploymentLifecycleStarted   druidEventReason = "DruidDeploymentLifecycleStarted"
+	druidDeploymentLifecycleTimedOut  druidEventReason = "DruidDeploymentLifecycleTimedOut"
+	druidDeploymentLifecycleSucceeded druidEventReason = "DruidDeploymentLifecycleSucceeded"
 )
 
 // Reader Interface

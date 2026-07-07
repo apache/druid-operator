@@ -26,6 +26,7 @@ global:
 env:
   DENY_LIST: "default,kube-system" # Comma-separated list of namespaces to ignore
   RECONCILE_WAIT: "10s" # Reconciliation delay
+  DEPLOYMENT_LIFECYCLE_TIMEOUT: "96h" # Observational timeout for long-running deployment lifecycle status
   WATCH_NAMESPACE: "" # Namespace to watch or empty string to watch all namespaces, To watch multiple namespaces add , into string. Ex: WATCH_NAMESPACE: "ns1,ns2,ns3"
   #MAX_CONCURRENT_RECONCILES:: ""  # MaxConcurrentReconciles is the maximum number of concurrent Reconciles which can be run.
 

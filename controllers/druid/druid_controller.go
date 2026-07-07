@@ -23,7 +23,7 @@ import (
 	"os"
 	"time"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/record"
 
 	"github.com/go-logr/logr"
@@ -42,17 +42,19 @@ type DruidReconciler struct {
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 	// reconcile time duration, defaults to 10s
-	ReconcileWait time.Duration
-	Recorder      record.EventRecorder
+	ReconcileWait              time.Duration
+	DeploymentLifecycleTimeout time.Duration
+	Recorder                   record.EventRecorder
 }
 
 func NewDruidReconciler(mgr ctrl.Manager) *DruidReconciler {
 	return &DruidReconciler{
-		Client:        mgr.GetClient(),
-		Log:           ctrl.Log.WithName("controllers").WithName("Druid"),
-		Scheme:        mgr.GetScheme(),
-		ReconcileWait: LookupReconcileTime(),
-		Recorder:      mgr.GetEventRecorderFor("druid-operator"),
+		Client:                     mgr.GetClient(),
+		Log:                        ctrl.Log.WithName("controllers").WithName("Druid"),
+		Scheme:                     mgr.GetScheme(),
+		ReconcileWait:              LookupReconcileTime(),
+		DeploymentLifecycleTimeout: LookupDeploymentLifecycleTimeout(),
+		Recorder:                   mgr.GetEventRecorderFor("druid-operator"),
 	}
 }
 
@@ -70,14 +72,15 @@ func NewDruidReconciler(mgr ctrl.Manager) *DruidReconciler {
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=storage.k8s.io,resources=storageclasses,verbs=get;list;watch
 
-func (r *DruidReconciler) Reconcile(ctx context.Context, request reconcile.Request) (ctrl.Result, error) {
+func (r *DruidReconciler) Reconcile(ctx context.Context, request reconcile.Request) (result ctrl.Result, err error) {
 	_ = r.Log.WithValues("druid", request.NamespacedName)
 
 	// Fetch the Druid instance
 	instance := &druidv1alpha1.Druid{}
-	err := r.Get(ctx, request.NamespacedName, instance)
+	err = r.Get(ctx, request.NamespacedName, instance)
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if k8serrors.IsNotFound(err) {
+			defaultDeploymentLifecycleMetrics.delete(request.Namespace, request.Name)
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
@@ -94,6 +97,8 @@ func (r *DruidReconciler) Reconcile(ctx context.Context, request reconcile.Reque
 	if err := deployDruidCluster(ctx, r.Client, instance, emitEvent); err != nil {
 		return ctrl.Result{}, err
 	}
+
+	r.recordDeploymentLifecycle(ctx, instance, emitEvent)
 
 	// Update Druid Dynamic Configs
 	if err := updateDruidDynamicConfigs(ctx, r.Client, instance, emitEvent); err != nil {
@@ -114,6 +119,31 @@ func (r *DruidReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+func (r *DruidReconciler) recordDeploymentLifecycle(ctx context.Context, instance *druidv1alpha1.Druid, emitEvent EventEmitter) {
+	deps := r.lifecycleDependencies()
+	snapshot, err := collectManagedResourceSnapshot(ctx, r.Client, instance)
+	if err != nil {
+		r.Log.Error(err, "failed to observe deployment lifecycle", "name", instance.Name, "namespace", instance.Namespace)
+		return
+	}
+	if !snapshot.hasWorkloads() {
+		return
+	}
+	if err := reconcileDeploymentLifecycleWithSnapshot(instance, snapshot, deps, func(updated druidv1alpha1.DeploymentLifecycleStatus) error {
+		return patchDeploymentLifecycleStatus(ctx, r.Client, instance, updated, emitEvent)
+	}); err != nil {
+		r.Log.Error(err, "failed to record deployment lifecycle", "name", instance.Name, "namespace", instance.Namespace)
+	}
+	defaultDeploymentLifecycleMetrics.record(instance, deps)
+}
+
+func (r *DruidReconciler) lifecycleDependencies() lifecycleDependencies {
+	return lifecycleDependencies{
+		now:     time.Now,
+		timeout: r.DeploymentLifecycleTimeout,
+	}
+}
+
 func LookupReconcileTime() time.Duration {
 	val, exists := os.LookupEnv("RECONCILE_WAIT")
 	if !exists {
@@ -127,6 +157,20 @@ func LookupReconcileTime() time.Duration {
 		}
 		return v
 	}
+}
+
+func LookupDeploymentLifecycleTimeout() time.Duration {
+	val, exists := os.LookupEnv("DEPLOYMENT_LIFECYCLE_TIMEOUT")
+	if !exists {
+		return time.Hour * 96
+	}
+
+	v, err := time.ParseDuration(val)
+	if err != nil {
+		logger.Error(err, err.Error())
+		os.Exit(1)
+	}
+	return v
 }
 
 func getMaxConcurrentReconciles() int {
