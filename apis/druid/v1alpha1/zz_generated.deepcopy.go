@@ -677,6 +677,24 @@ func (in *DruidSpec) DeepCopyInto(out *DruidSpec) {
 		*out = new(v1.Affinity)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.OrderOfUpgrade != nil {
+		in, out := &in.OrderOfUpgrade, &out.OrderOfUpgrade
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.OrderOfUpgradeOfTiers != nil {
+		in, out := &in.OrderOfUpgradeOfTiers, &out.OrderOfUpgradeOfTiers
+		*out = make(map[string][]string, len(*in))
+		for key, val := range *in {
+			var outVal []string
+			if val != nil {
+				in, out := &val, &outVal
+				*out = make([]string, len(*in))
+				copy(*out, *in)
+			}
+			(*out)[key] = outVal
+		}
+	}
 	if in.Nodes != nil {
 		in, out := &in.Nodes, &out.Nodes
 		*out = make(map[string]DruidNodeSpec, len(*in))

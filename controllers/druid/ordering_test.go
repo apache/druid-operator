@@ -29,21 +29,16 @@ import (
 
 // +kubebuilder:docs-gen:collapse=Imports
 
-/*
-ordering_test
-*/
 var _ = Describe("Test ordering logic", func() {
 	const (
-		filePath = "testdata/ordering.yaml"
 		timeout  = time.Second * 45
 		interval = time.Millisecond * 250
 	)
 
-	var (
-		druid = &druidv1alpha1.Druid{}
-	)
+	Context("When creating a druid cluster with multiple nodes (default order)", func() {
+		const filePath = "testdata/ordering.yaml"
+		var druid = &druidv1alpha1.Druid{}
 
-	Context("When creating a druid cluster with multiple nodes", func() {
 		It("Should create the druid object", func() {
 			By("Creating a new druid")
 			druidCR, err := readDruidClusterSpecFromFile(filePath)
@@ -66,6 +61,43 @@ var _ = Describe("Test ordering logic", func() {
 			Expect(orderedServiceGroups[5].key).Should(Equal("brokers"))
 			Expect(orderedServiceGroups[6].key).Should(Equal("coordinators"))
 			Expect(orderedServiceGroups[7].key).Should(Equal("routers"))
+		})
+	})
+
+	Context("When creating a druid cluster with custom order and tiers", func() {
+		const filePath = "testdata/ordering-tiers.yaml"
+		var druid = &druidv1alpha1.Druid{}
+
+		It("Should create the druid object", func() {
+			By("Creating a new druid")
+			druidCR, err := readDruidClusterSpecFromFile(filePath)
+			Expect(err).Should(BeNil())
+			Expect(k8sClient.Create(ctx, druidCR)).To(Succeed())
+
+			By("Getting a newly created druid")
+			Eventually(func() bool {
+				err := k8sClient.Get(ctx, types.NamespacedName{Name: druidCR.Name, Namespace: druidCR.Namespace}, druid)
+				return err == nil
+			}, timeout, interval).Should(BeTrue())
+		})
+		It("Should return nodes ordered by custom nodeType order and tier order", func() {
+			orderedServiceGroups := getNodeSpecsByOrder(druid)
+			Expect(orderedServiceGroups).Should(HaveLen(6))
+			// historical:hot first, then historical:cold, then historical:glacier
+			Expect(orderedServiceGroups[0].key).Should(Equal("historical-az1"))
+			Expect(orderedServiceGroups[0].tier).Should(Equal("hot"))
+			Expect(orderedServiceGroups[1].key).Should(Equal("historical-az2"))
+			Expect(orderedServiceGroups[1].tier).Should(Equal("cold"))
+			Expect(orderedServiceGroups[2].key).Should(Equal("historical-az3"))
+			Expect(orderedServiceGroups[2].tier).Should(Equal("glacier"))
+			// broker:hot then broker:cold
+			Expect(orderedServiceGroups[3].key).Should(Equal("broker-az1"))
+			Expect(orderedServiceGroups[3].tier).Should(Equal("hot"))
+			Expect(orderedServiceGroups[4].key).Should(Equal("broker-az2"))
+			Expect(orderedServiceGroups[4].tier).Should(Equal("cold"))
+			// coordinator (no tier)
+			Expect(orderedServiceGroups[5].key).Should(Equal("coordinators"))
+			Expect(orderedServiceGroups[5].tier).Should(Equal(""))
 		})
 	})
 })

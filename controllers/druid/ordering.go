@@ -18,36 +18,85 @@ under the License.
 */
 package druid
 
-import "github.com/apache/druid-operator/apis/druid/v1alpha1"
+import (
+	"sort"
+
+	"github.com/apache/druid-operator/apis/druid/v1alpha1"
+)
 
 var (
-	druidServicesOrder = []string{historical, overlord, middleManager, indexer, broker, coordinator, router}
+	defaultDruidServicesOrder = []string{historical, overlord, middleManager, indexer, broker, coordinator, router}
 )
 
 type ServiceGroup struct {
-	key  string
-	spec v1alpha1.DruidNodeSpec
+	key      string
+	nodeType string
+	tier     string
+	spec     v1alpha1.DruidNodeSpec
 }
 
-// getNodeSpecsByOrder returns all NodeSpecs f a given Druid object.
-// Recommended order is described at http://druid.io/docs/latest/operations/rolling-updates.html
 func getNodeSpecsByOrder(m *v1alpha1.Druid) []*ServiceGroup {
+	nodeTypeOrder := defaultDruidServicesOrder
+	if len(m.Spec.OrderOfUpgrade) > 0 {
+		nodeTypeOrder = m.Spec.OrderOfUpgrade
+	}
 
-	scaledServiceSpecsByNodeType := map[string][]*ServiceGroup{}
-	for _, t := range druidServicesOrder {
-		scaledServiceSpecsByNodeType[t] = []*ServiceGroup{}
+	groupsByNodeType := map[string][]*ServiceGroup{}
+	for _, t := range nodeTypeOrder {
+		groupsByNodeType[t] = []*ServiceGroup{}
 	}
 
 	for key, nodeSpec := range m.Spec.Nodes {
-		scaledServiceSpec := scaledServiceSpecsByNodeType[nodeSpec.NodeType]
-		scaledServiceSpecsByNodeType[nodeSpec.NodeType] = append(scaledServiceSpec, &ServiceGroup{key: key, spec: nodeSpec})
+		sg := &ServiceGroup{
+			key:      key,
+			nodeType: nodeSpec.NodeType,
+			tier:     nodeSpec.Tier,
+			spec:     nodeSpec,
+		}
+		groupsByNodeType[nodeSpec.NodeType] = append(groupsByNodeType[nodeSpec.NodeType], sg)
 	}
 
-	allScaledServiceSpecs := make([]*ServiceGroup, 0, len(m.Spec.Nodes))
-
-	for _, t := range druidServicesOrder {
-		allScaledServiceSpecs = append(allScaledServiceSpecs, scaledServiceSpecsByNodeType[t]...)
+	for nodeType, groups := range groupsByNodeType {
+		tierOrder := m.Spec.OrderOfUpgradeOfTiers[nodeType]
+		sortServiceGroups(groups, tierOrder)
+		groupsByNodeType[nodeType] = groups
 	}
 
-	return allScaledServiceSpecs
+	result := make([]*ServiceGroup, 0, len(m.Spec.Nodes))
+	for _, t := range nodeTypeOrder {
+		result = append(result, groupsByNodeType[t]...)
+	}
+
+	return result
+}
+
+func sortServiceGroups(groups []*ServiceGroup, tierOrder []string) {
+	if len(groups) <= 1 {
+		return
+	}
+
+	tierRank := make(map[string]int, len(tierOrder))
+	for i, t := range tierOrder {
+		tierRank[t] = i
+	}
+
+	sort.SliceStable(groups, func(i, j int) bool {
+		gi, gj := groups[i], groups[j]
+
+		if len(tierOrder) > 0 {
+			ri, okI := tierRank[gi.tier]
+			rj, okJ := tierRank[gj.tier]
+
+			switch {
+			case okI && okJ && ri != rj:
+				return ri < rj
+			case okI && !okJ:
+				return true
+			case !okI && okJ:
+				return false
+			}
+		}
+
+		return gi.key < gj.key
+	})
 }
