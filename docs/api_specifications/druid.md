@@ -1,21 +1,3 @@
-<!--
-Licensed to the Apache Software Foundation (ASF) under one
-or more contributor license agreements.  See the NOTICE file
-distributed with this work for additional information
-regarding copyright ownership.  The ASF licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
--->
 <h1>Druid API reference</h1>
 <p>Packages:</p>
 <ul class="simple">
@@ -24,6 +6,20 @@ under the License.
 </li>
 </ul>
 <h2 id="druid.apache.org/v1alpha1">druid.apache.org/v1alpha1</h2>
+<p>Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+&ldquo;License&rdquo;); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at</p>
+<p><a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+<p>Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+&ldquo;AS IS&rdquo; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.</p>
 Resource Types:
 <ul class="simple"></ul>
 <h3 id="druid.apache.org/v1alpha1.AdditionalContainer">AdditionalContainer
@@ -784,6 +780,22 @@ This will be done only for update actions.</p>
 </tr>
 <tr>
 <td>
+<code>middleManagerDrainStrategy</code><br>
+<em>
+<a href="#druid.apache.org/v1alpha1.MiddleManagerDrainStrategy">
+MiddleManagerDrainStrategy
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MiddleManagerDrainStrategy enables operator-managed draining before
+MiddleManager StatefulSet pods are rolled. If nil, MiddleManagers use the
+standard StatefulSet rolling update behavior.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>defaultProbes</code><br>
 <em>
 bool
@@ -1061,6 +1073,18 @@ Important: Run &ldquo;make&rdquo; to regenerate code after modifying this file</
 <code>persistentVolumeClaims</code><br>
 <em>
 []string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>middleManagerDrain</code><br>
+<em>
+<a href="#druid.apache.org/v1alpha1.MiddleManagerDrainStatus">
+MiddleManagerDrainStatus
+</a>
 </em>
 </td>
 <td>
@@ -2614,6 +2638,22 @@ This will be done only for update actions.</p>
 </tr>
 <tr>
 <td>
+<code>middleManagerDrainStrategy</code><br>
+<em>
+<a href="#druid.apache.org/v1alpha1.MiddleManagerDrainStrategy">
+MiddleManagerDrainStrategy
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MiddleManagerDrainStrategy enables operator-managed draining before
+MiddleManager StatefulSet pods are rolled. If nil, MiddleManagers use the
+standard StatefulSet rolling update behavior.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>defaultProbes</code><br>
 <em>
 bool
@@ -2885,6 +2925,151 @@ encoding/json.RawMessage
 <br/>
 <table>
 </table>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="druid.apache.org/v1alpha1.MiddleManagerDrainStatus">MiddleManagerDrainStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#druid.apache.org/v1alpha1.DruidClusterStatus">DruidClusterStatus</a>)
+</p>
+<p>MiddleManagerDrainStatus reports an in-progress MiddleManager drain rollout.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>statefulSet</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>phase</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>podName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>podOrdinal</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>oldPodUID</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>lastTransitionTime</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#time-v1-meta">
+Kubernetes meta/v1.Time
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>message</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="druid.apache.org/v1alpha1.MiddleManagerDrainStrategy">MiddleManagerDrainStrategy
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#druid.apache.org/v1alpha1.DruidSpec">DruidSpec</a>)
+</p>
+<p>MiddleManagerDrainStrategy configures operator-managed draining before a
+MiddleManager StatefulSet pod is rolled to a new revision.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>drainTimeout</code><br>
+<em>
+<a href="https://godoc.org/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DrainTimeout is the maximum time to wait for streaming ingestion tasks to
+drain before allowing Kubernetes to replace the MiddleManager pod.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>podReadyTimeout</code><br>
+<em>
+<a href="https://godoc.org/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PodReadyTimeout is the maximum time to wait for Kubernetes to replace the
+pod and for the replacement to become ready on the target StatefulSet revision.</p>
 </td>
 </tr>
 </tbody>

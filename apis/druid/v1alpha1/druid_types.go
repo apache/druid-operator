@@ -93,6 +93,22 @@ type AdditionalContainer struct {
 	EnvFrom []v1.EnvFromSource `json:"envFrom,omitempty"`
 }
 
+// MiddleManagerDrainStrategy configures operator-managed draining before a
+// MiddleManager StatefulSet pod is rolled to a new revision.
+type MiddleManagerDrainStrategy struct {
+	// DrainTimeout is the maximum time to wait for streaming ingestion tasks to
+	// drain before allowing Kubernetes to replace the MiddleManager pod.
+	// +optional
+	// +kubebuilder:default:="1h"
+	DrainTimeout metav1.Duration `json:"drainTimeout,omitempty"`
+
+	// PodReadyTimeout is the maximum time to wait for Kubernetes to replace the
+	// pod and for the replacement to become ready on the target StatefulSet revision.
+	// +optional
+	// +kubebuilder:default:="30m"
+	PodReadyTimeout metav1.Duration `json:"podReadyTimeout,omitempty"`
+}
+
 // DruidSpec defines the desired state of the Druid cluster.
 type DruidSpec struct {
 
@@ -269,6 +285,12 @@ type DruidSpec struct {
 	// +optional
 	// +kubebuilder:default:=true
 	RollingDeploy bool `json:"rollingDeploy"`
+
+	// MiddleManagerDrainStrategy enables operator-managed draining before
+	// MiddleManager StatefulSet pods are rolled. If nil, MiddleManagers use the
+	// standard StatefulSet rolling update behavior.
+	// +optional
+	MiddleManagerDrainStrategy *MiddleManagerDrainStrategy `json:"middleManagerDrainStrategy,omitempty"`
 
 	// DefaultProbes If set to true this will add default probes (liveness / readiness / startup) for all druid components
 	// but it won't override existing probes
@@ -570,20 +592,32 @@ type DruidNodeTypeStatus struct {
 	Reason                   string                 `json:"reason,omitempty"`
 }
 
+// MiddleManagerDrainStatus reports an in-progress MiddleManager drain rollout.
+type MiddleManagerDrainStatus struct {
+	StatefulSet        string      `json:"statefulSet,omitempty"`
+	Phase              string      `json:"phase,omitempty"`
+	PodName            string      `json:"podName,omitempty"`
+	PodOrdinal         int32       `json:"podOrdinal,omitempty"`
+	OldPodUID          string      `json:"oldPodUID,omitempty"`
+	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
+	Message            string      `json:"message,omitempty"`
+}
+
 // DruidClusterStatus Defines the observed state of Druid.
 type DruidClusterStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	DruidNodeStatus        DruidNodeTypeStatus `json:"druidNodeStatus,omitempty"`
-	StatefulSets           []string            `json:"statefulSets,omitempty"`
-	Deployments            []string            `json:"deployments,omitempty"`
-	Services               []string            `json:"services,omitempty"`
-	ConfigMaps             []string            `json:"configMaps,omitempty"`
-	PodDisruptionBudgets   []string            `json:"podDisruptionBudgets,omitempty"`
-	Ingress                []string            `json:"ingress,omitempty"`
-	HPAutoScalers          []string            `json:"hpAutoscalers,omitempty"`
-	Pods                   []string            `json:"pods,omitempty"`
-	PersistentVolumeClaims []string            `json:"persistentVolumeClaims,omitempty"`
+	DruidNodeStatus        DruidNodeTypeStatus       `json:"druidNodeStatus,omitempty"`
+	StatefulSets           []string                  `json:"statefulSets,omitempty"`
+	Deployments            []string                  `json:"deployments,omitempty"`
+	Services               []string                  `json:"services,omitempty"`
+	ConfigMaps             []string                  `json:"configMaps,omitempty"`
+	PodDisruptionBudgets   []string                  `json:"podDisruptionBudgets,omitempty"`
+	Ingress                []string                  `json:"ingress,omitempty"`
+	HPAutoScalers          []string                  `json:"hpAutoscalers,omitempty"`
+	Pods                   []string                  `json:"pods,omitempty"`
+	PersistentVolumeClaims []string                  `json:"persistentVolumeClaims,omitempty"`
+	MiddleManagerDrain     *MiddleManagerDrainStatus `json:"middleManagerDrain,omitempty"`
 }
 
 // Druid is the Schema for the druids API.

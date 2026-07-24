@@ -23,6 +23,7 @@ under the License.
 - [Finalizer in Druid CR](#finalizer-in-druid-cr)
 - [Deletion of Orphan PVCs](#deletion-of-orphan-pvcs)
 - [Rolling Deploy](#rolling-deploy)
+- [MiddleManager Drain Strategy](#middlemanager-drain-strategy)
 - [Force Delete of Sts Pods](#force-delete-of-sts-pods)
 - [Horizontal Scaling of Druid Pods](#horizontal-scaling-of-druid-pods)
 - [Volume Expansion of Druid Pods Running As StatefulSets](#volume-expansion-of-druid-pods-running-as-statefulsets)
@@ -67,6 +68,39 @@ not continue with the update - this will require a manual intervention.
 Default updates are done in parallel. Since cluster creation does not require a rolling update, they will be done
 in parallel anyway. To enable this feature, set `rollingDeploy: true` in the Druid CR.
 ⚠️ This feature is enabled by default.
+
+## MiddleManager Drain Strategy
+For streaming ingestion clusters, a regular StatefulSet rolling update can terminate MiddleManager pods while they still
+own running Kafka or Kinesis indexing tasks. The operator can instead drain each MiddleManager pod before Kubernetes
+replaces it.
+
+Enable this opt-in behavior by setting `spec.middleManagerDrainStrategy`. The field uses pointer presence: if the field
+is omitted, MiddleManagers use the standard StatefulSet rolling update behavior.
+
+```yaml
+spec:
+  rollingDeploy: true
+  middleManagerDrainStrategy:
+    drainTimeout: 1h
+    podReadyTimeout: 30m
+```
+
+When enabled, the operator:
+
+1. Blocks the MiddleManager StatefulSet rollout by setting the rolling update partition to the replica count.
+2. Selects one outdated MiddleManager pod at a time, highest ordinal first.
+3. Disables the worker through the Druid Overlord API.
+4. Finds running streaming tasks with Druid SQL and triggers supervisor task-group handoff.
+5. Waits for running Kafka/Kinesis tasks on that pod to drain, up to `drainTimeout`.
+6. Lowers the StatefulSet partition for that pod and waits for the replacement pod to be ready on the new revision.
+7. Re-enables the worker and proceeds to the next pod on the following reconcile.
+
+The strategy is supported only for MiddleManager nodes running as StatefulSets. If configured for a MiddleManager
+Deployment, the operator logs a warning and uses the normal Deployment rollout path.
+
+This feature requires the operator to reach the Druid Router service and use the Druid API credentials configured in
+`spec.auth`, when authentication is enabled. If the Router service cannot be discovered, the rollout is blocked and the
+error is surfaced by the reconcile loop.
 
 ## Force Delete of Sts Pods
 During upgradeS, if THE StatefulSet is set to `OrderedReady` - the StatefulSet controller will not recover from 

@@ -31,6 +31,11 @@ spec:
   # more information in features.md and in druid documentation
   # http://druid.io/docs/latest/operations/rolling-updates.html
   rollingDeploy: true
+  # Optional: drain MiddleManager StatefulSet pods before replacing them during rolling updates.
+  # Omit this field to use standard StatefulSet rolling update behavior.
+  middleManagerDrainStrategy:
+    drainTimeout: 1h
+    podReadyTimeout: 30m
   # Image for druid, Required Key
   image: apache/druid:25.0.0
   ....

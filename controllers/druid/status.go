@@ -67,7 +67,9 @@ func druidClusterStatusPatcher(ctx context.Context, sdk client.Client, updatedSt
 		if err != nil {
 			return fmt.Errorf("failed to serialize status patch to bytes: %v", err)
 		}
-		_ = writers.Patch(ctx, sdk, m, m, true, client.RawPatch(types.MergePatchType, patchBytes), emitEvent)
+		if err := writers.Patch(ctx, sdk, m, m, true, client.RawPatch(types.MergePatchType, patchBytes), emitEvent); err != nil {
+			return err
+		}
 	}
 	return nil
 }

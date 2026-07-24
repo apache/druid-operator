@@ -141,6 +141,18 @@ func MakePath(baseURL, componentType, apiType string, additionalPaths ...string)
 	return u.String()
 }
 
+// MakeSQLPath constructs the path for Druid's SQL API.
+func MakeSQLPath(baseURL string) string {
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		fmt.Println("Error parsing URL:", err)
+		return ""
+	}
+
+	u.Path = path.Join("druid", "v2", "sql")
+	return u.String()
+}
+
 // GetRouterSvcUrl retrieves the URL of the Druid router service.
 // Parameters:
 //
