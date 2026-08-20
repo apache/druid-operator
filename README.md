@@ -21,6 +21,22 @@ under the License.
 
 ## Helm Chart
 
+> **Note:** the hosted chart repository at `https://apache.github.io/druid-operator` is not
+> published yet (its index is currently empty), so the `helm repo add` flow below does not
+> work for now. This also means there is currently no hosted helm repository for this
+> chart at all: the repository previously documented by this operator,
+> `https://charts.datainfra.io`, is a lapsed domain no longer under the project's control
+> and must not be added.
+
+Until a chart release is published, install the chart directly from this repository:
+
+```bash
+git clone https://github.com/apache/druid-operator.git
+helm -n druid-operator-system upgrade -i --create-namespace cluster-druid-operator ./druid-operator/chart
+```
+
+Once the hosted repository is published:
+
 ```bash
 helm repo add apache-druid https://apache.github.io/druid-operator
 helm repo update
